@@ -1,0 +1,45 @@
+name: تحديث قائمة الصور تلقائياً
+
+on:
+  push:
+    paths:
+      - 'photos/**'
+
+jobs:
+  update-photos-list:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate photos.json
+        run: |
+          # جمع كل ملفات الصور في مجلد photos/ وإنشاء JSON
+          python3 - <<'EOF'
+          import os, json
+
+          PHOTOS_DIR = "photos"
+          EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif"}
+
+          files = sorted([
+              f for f in os.listdir(PHOTOS_DIR)
+              if os.path.isfile(os.path.join(PHOTOS_DIR, f))
+              and os.path.splitext(f)[1].lower() in EXTENSIONS
+          ])
+
+          with open("photos.json", "w", encoding="utf-8") as out:
+              json.dump(files, out, ensure_ascii=False, indent=2)
+
+          print(f"✅ تم تحديث photos.json — {len(files)} صورة")
+          EOF
+
+      - name: Commit & Push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add photos.json
+          git diff --cached --quiet || git commit -m "🖼️ تحديث قائمة الصور تلقائياً"
+          git push
