@@ -2,450 +2,440 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#000000" />
   <title>معرض الصور</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;700&display=swap" rel="stylesheet" />
-
   <style>
-    :root {
-      --bg:        #0a0a0a;
-      --surface:   #111111;
-      --accent:    #e8d5b0;
-      --muted:     rgba(255,255,255,0.35);
-      --font:      'Tajawal', sans-serif;
-      --ease:      cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    html, body {
-      height: 100%; width: 100%;
-      background: var(--bg);
-      color: #fff;
-      font-family: var(--font);
-      overflow: hidden;
-      touch-action: none;
-    }
-
-    /* ─── Grain overlay ─── */
-    body::after {
-      content: '';
-      position: fixed; inset: 0;
-      pointer-events: none;
-      z-index: 1000;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      opacity: .5;
-    }
-
-    /* ─── Loading screen ─── */
-    #loader {
-      position: fixed; inset: 0;
-      background: var(--bg);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 20px; z-index: 900;
-      transition: opacity .6s var(--ease), visibility .6s;
-    }
-    #loader.hidden { opacity: 0; visibility: hidden; }
-    .loader-ring {
-      width: 48px; height: 48px;
-      border: 1.5px solid rgba(255,255,255,0.1);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    #loader p { font-size: 13px; color: var(--muted); letter-spacing: .12em; font-weight: 300; }
-
-    /* ─── Empty state ─── */
-    #empty {
-      display: none;
-      position: fixed; inset: 0;
-      flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 16px; z-index: 10;
-      padding: 40px;
-      text-align: center;
-    }
-    #empty.show { display: flex; }
-    #empty svg { opacity: .3; }
-    #empty h2 { font-size: 22px; font-weight: 300; color: var(--accent); }
-    #empty p { font-size: 14px; color: var(--muted); line-height: 1.7; }
-
-    /* ─── Gallery container ─── */
-    #gallery {
-      position: fixed; inset: 0;
-      display: flex;
-      transition: transform .45s var(--ease);
-      will-change: transform;
-    }
-
-    /* ─── Slide ─── */
-    .slide {
-      min-width: 100vw; height: 100vh;
-      position: relative;
-      flex-shrink: 0;
-      overflow: hidden;
-    }
-    .slide img {
-      width: 100%; height: 100%;
-      object-fit: contain;
-      display: block;
+    html {
+      height: 100%;
       background: #000;
     }
-    .slide.active img { /* no zoom — show full image */ }
 
-    /* Subtle vignette */
-    .slide::after {
-      content: '';
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,.55) 100%);
+    body {
+      height: 100%;
+      background: #000;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+    }
+
+    /* ══════════════════════════════
+       LOADING
+    ══════════════════════════════ */
+    #loader {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      z-index: 999;
+      transition: opacity 0.5s ease;
+    }
+    #loader.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #loader.gone { display: none; }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 2px solid rgba(255,255,255,0.15);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #loader span {
+      color: rgba(255,255,255,0.5);
+      font-size: 13px;
+      letter-spacing: 0.1em;
+    }
+
+    /* ══════════════════════════════
+       EMPTY STATE
+    ══════════════════════════════ */
+    #empty {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #000;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 32px;
+      text-align: center;
+      z-index: 10;
+    }
+    #empty.show { display: flex; }
+    #empty svg { opacity: 0.25; margin-bottom: 8px; }
+    #empty h2 { color: #fff; font-size: 20px; font-weight: 400; }
+    #empty p  { color: rgba(255,255,255,0.45); font-size: 13px; line-height: 1.8; }
+    #empty code { color: rgba(255,200,100,0.9); font-size: 12px; }
+
+    /* ══════════════════════════════
+       MAIN VIEWER
+    ══════════════════════════════ */
+    #viewer {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      background: #000;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Each slide */
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+      pointer-events: none;
+    }
+    .slide.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .slide img {
+      display: block;
+      max-width:  100%;
+      max-height: 100%;
+      width:  auto;
+      height: auto;
+      object-fit: contain;
+      -webkit-touch-callout: none;
       pointer-events: none;
     }
 
-    /* ─── Top bar ─── */
-    #topbar {
-      position: fixed; top: 0; left: 0; right: 0;
-      padding: env(safe-area-inset-top, 16px) 20px 16px;
-      display: flex; align-items: center; justify-content: space-between;
-      z-index: 200;
-      background: linear-gradient(to bottom, rgba(0,0,0,.65) 0%, transparent 100%);
+    /* ══════════════════════════════
+       TOP HUD
+    ══════════════════════════════ */
+    #hud-top {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding-top: env(safe-area-inset-top, 0px);
+      z-index: 100;
       pointer-events: none;
     }
-    #gallery-title {
-      font-size: 15px; font-weight: 300;
-      letter-spacing: .18em;
-      color: var(--accent);
-      text-transform: uppercase;
+    .hud-inner-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px 18px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
+    }
+    #title-text {
+      color: rgba(255,255,255,0.9);
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: 0.05em;
     }
     #counter {
-      font-size: 13px; color: var(--muted);
-      letter-spacing: .08em; font-weight: 300;
+      color: rgba(255,255,255,0.5);
+      font-size: 13px;
+      font-weight: 300;
+      letter-spacing: 0.06em;
     }
 
-    /* ─── Bottom bar ─── */
-    #bottombar {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      padding: 20px 20px env(safe-area-inset-bottom, 20px);
-      display: flex; align-items: center; justify-content: center;
-      gap: 28px;
-      z-index: 200;
-      background: linear-gradient(to top, rgba(0,0,0,.65) 0%, transparent 100%);
+    /* ══════════════════════════════
+       BOTTOM HUD
+    ══════════════════════════════ */
+    #hud-bottom {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      z-index: 100;
+      pointer-events: all;
     }
+    .hud-inner-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 20px 20px;
+      background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+      gap: 16px;
+    }
+
+    /* Nav buttons */
+    .nav {
+      width: 44px;
+      height: 44px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #fff;
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s;
+      touch-action: manipulation;
+    }
+    .nav:active { background: rgba(255,255,255,0.25); }
+    .nav svg { pointer-events: none; }
 
     /* Dots */
     #dots {
-      display: flex; gap: 7px; align-items: center;
-      max-width: calc(100vw - 120px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex: 1;
+      flex-wrap: wrap;
+      max-height: 30px;
       overflow: hidden;
-      flex-wrap: nowrap;
     }
     .dot {
-      width: 6px; height: 6px;
+      width: 5px;
+      height: 5px;
       border-radius: 50%;
-      background: var(--muted);
+      background: rgba(255,255,255,0.3);
+      transition: background 0.25s, transform 0.25s;
+      cursor: pointer;
       flex-shrink: 0;
-      transition: background .3s, transform .3s;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
     .dot.active {
-      background: var(--accent);
-      transform: scale(1.4);
+      background: #fff;
+      transform: scale(1.5);
     }
 
-    /* Nav arrows (appear on larger screens or tap) */
-    .nav-btn {
-      width: 42px; height: 42px;
-      border-radius: 50%;
-      border: 1px solid rgba(255,255,255,.18);
-      background: rgba(0,0,0,.35);
-      backdrop-filter: blur(8px);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      color: #fff;
-      flex-shrink: 0;
-      transition: background .2s, border-color .2s;
-      -webkit-tap-highlight-color: transparent;
-      pointer-events: all;
-    }
-    .nav-btn:active { background: rgba(255,255,255,.12); }
-
-    /* ─── Lightbox (tap image) ─── */
-    #info-panel {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,.82);
-      backdrop-filter: blur(20px);
-      z-index: 500;
-      display: flex; align-items: center; justify-content: center;
-      padding: 40px 24px;
-      opacity: 0; pointer-events: none;
-      transition: opacity .3s;
-    }
-    #info-panel.open { opacity: 1; pointer-events: all; }
-    .info-inner {
-      text-align: center;
-      max-width: 320px;
-    }
-    #info-name {
-      font-size: 18px; font-weight: 300;
-      color: var(--accent); letter-spacing: .06em;
-      margin-bottom: 8px;
-    }
-    #info-index {
-      font-size: 13px; color: var(--muted);
-    }
-    #info-close {
-      margin-top: 32px;
-      display: inline-block;
-      padding: 10px 28px;
-      border: 1px solid rgba(255,255,255,.2);
-      border-radius: 40px;
-      font-size: 13px; color: #fff;
-      letter-spacing: .1em;
-      cursor: pointer;
-      background: transparent;
-      font-family: var(--font);
-      transition: background .2s;
-    }
-    #info-close:active { background: rgba(255,255,255,.1); }
-
-    /* ─── Swipe hint ─── */
-    #swipe-hint {
-      position: fixed; bottom: 80px; left: 50%;
+    /* ══════════════════════════════
+       SWIPE HINT
+    ══════════════════════════════ */
+    #hint {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
       transform: translateX(-50%);
-      display: flex; align-items: center; gap: 8px;
-      font-size: 12px; color: var(--muted); letter-spacing: .1em;
-      z-index: 300;
-      animation: fadeHint 3s ease forwards;
+      color: rgba(255,255,255,0.5);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      z-index: 200;
+      pointer-events: none;
+      white-space: nowrap;
+      animation: hintAnim 2.8s ease forwards;
     }
-    @keyframes fadeHint {
-      0%   { opacity: 0; transform: translateX(-50%) translateY(6px); }
-      20%  { opacity: 1; transform: translateX(-50%) translateY(0); }
-      75%  { opacity: 1; }
+    @keyframes hintAnim {
+      0%   { opacity: 0; }
+      20%  { opacity: 1; }
+      80%  { opacity: 1; }
       100% { opacity: 0; }
     }
+
   </style>
 </head>
 <body>
 
   <!-- Loading -->
   <div id="loader">
-    <div class="loader-ring"></div>
-    <p>جار التحميل…</p>
+    <div class="spinner"></div>
+    <span>جار التحميل…</span>
   </div>
 
-  <!-- Empty state -->
+  <!-- Empty -->
   <div id="empty">
-    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-      <rect x="8" y="12" width="48" height="40" rx="4" stroke="white" stroke-width="1.5"/>
-      <circle cx="22" cy="26" r="5" stroke="white" stroke-width="1.5"/>
-      <path d="M8 44 L20 32 L30 42 L42 28 L56 44" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+    <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="10" width="44" height="36" rx="4" stroke="white" stroke-width="1.5"/>
+      <circle cx="19" cy="22" r="4" stroke="white" stroke-width="1.5"/>
+      <path d="M6 38 L18 26 L27 35 L37 24 L50 38" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
     </svg>
-    <h2>المعرض فارغ</h2>
-    <p>أضف صورك إلى مجلد <code style="color:var(--accent)">photos/</code><br/>ثم أضف أسماءها في <code style="color:var(--accent)">photos.json</code></p>
+    <h2>لا توجد صور</h2>
+    <p>ضع صورك في مجلد <code>photos/</code><br/>وأضف أسماءها في <code>photos.json</code></p>
   </div>
 
-  <!-- Slides -->
-  <div id="gallery"></div>
+  <!-- Viewer -->
+  <div id="viewer"></div>
 
-  <!-- Top bar -->
-  <div id="topbar">
-    <span id="gallery-title">معرض الصور</span>
-    <span id="counter"></span>
-  </div>
-
-  <!-- Bottom bar -->
-  <div id="bottombar">
-    <button class="nav-btn" id="prev" aria-label="السابق">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <path d="M9 18l6-6-6-6"/>
-      </svg>
-    </button>
-    <div id="dots"></div>
-    <button class="nav-btn" id="next" aria-label="التالي">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-        <path d="M15 18l-6-6 6-6"/>
-      </svg>
-    </button>
-  </div>
-
-  <!-- Info panel -->
-  <div id="info-panel">
-    <div class="info-inner">
-      <div id="info-name"></div>
-      <div id="info-index"></div>
-      <button id="info-close" onclick="closeInfo()">إغلاق</button>
+  <!-- Top HUD -->
+  <div id="hud-top">
+    <div class="hud-inner-top">
+      <span id="title-text">معرض الصور</span>
+      <span id="counter"></span>
     </div>
   </div>
 
-  <script>
-    // ── Config ──────────────────────────────────────────────
-    const PHOTOS_JSON = 'photos.json';   // path to your JSON list
-    const PHOTOS_FOLDER = 'photos/';     // folder containing images
-    const GALLERY_TITLE = 'معرض الصور';  // ← Change the title here
-    // ────────────────────────────────────────────────────────
+  <!-- Bottom HUD -->
+  <div id="hud-bottom">
+    <div class="hud-inner-bottom">
+      <button class="nav" id="btn-prev" aria-label="السابق">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
+      <div id="dots"></div>
+      <button class="nav" id="btn-next" aria-label="التالي">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </button>
+    </div>
+  </div>
 
-    let photos = [], current = 0, startX = 0, isDragging = false, dragDelta = 0;
-    const gallery   = document.getElementById('gallery');
-    const counter   = document.getElementById('counter');
-    const dotsEl    = document.getElementById('dots');
-    const loader    = document.getElementById('loader');
-    const emptyEl   = document.getElementById('empty');
-    const infoPanel = document.getElementById('info-panel');
+<script>
+// ─── Config ────────────────────────────────────────
+const PHOTOS_JSON  = 'photos.json';
+const PHOTOS_DIR   = 'photos/';
+const TITLE        = 'معرض الصور';   // ← غيّر العنوان هنا
+// ───────────────────────────────────────────────────
 
-    document.getElementById('gallery-title').textContent = GALLERY_TITLE;
+const viewer   = document.getElementById('viewer');
+const dotsEl   = document.getElementById('dots');
+const counter  = document.getElementById('counter');
+const loader   = document.getElementById('loader');
+const emptyEl  = document.getElementById('empty');
+const btnPrev  = document.getElementById('btn-prev');
+const btnNext  = document.getElementById('btn-next');
 
-    // ── Load photos list ────────────────────────────────────
-    async function init() {
-      try {
-        const res  = await fetch(PHOTOS_JSON + '?v=' + Date.now());
-        photos = await res.json();
-      } catch(e) { photos = []; }
+document.getElementById('title-text').textContent = TITLE;
 
-      loader.classList.add('hidden');
+let photos  = [];
+let current = 0;
+let slides  = [];
 
-      if (!photos.length) { emptyEl.classList.add('show'); return; }
+// ─── Init ────────────────────────────────────────────
+async function init() {
+  try {
+    const res = await fetch(PHOTOS_JSON + '?_=' + Date.now());
+    if (!res.ok) throw new Error();
+    photos = await res.json();
+  } catch {
+    photos = [];
+  }
 
-      buildSlides();
-      buildDots();
-      goto(0, false);
-      attachEvents();
-      showSwipeHint();
-    }
+  loader.classList.add('fade-out');
+  setTimeout(() => loader.classList.add('gone'), 500);
 
-    // ── Build DOM ───────────────────────────────────────────
-    function buildSlides() {
-      photos.forEach((file, i) => {
-        const slide = document.createElement('div');
-        slide.className = 'slide';
-        const img = document.createElement('img');
-        img.src  = PHOTOS_FOLDER + file;
-        img.alt  = file.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
-        img.loading = i === 0 ? 'eager' : 'lazy';
-        img.decoding = 'async';
-        slide.appendChild(img);
-        // Tap for info
-        slide.addEventListener('click', () => openInfo(i));
-        gallery.appendChild(slide);
-      });
-    }
+  if (!photos.length) {
+    emptyEl.classList.add('show');
+    return;
+  }
 
-    function buildDots() {
-      photos.forEach((_, i) => {
-        const d = document.createElement('div');
-        d.className = 'dot';
-        d.addEventListener('click', () => goto(i));
-        dotsEl.appendChild(d);
-      });
-      // Hide dots if > 20 photos (too many)
-      if (photos.length > 20) dotsEl.style.display = 'none';
-    }
+  build();
+  goTo(0);
+  bindSwipe();
+  showHint();
+}
 
-    // ── Navigate ────────────────────────────────────────────
-    function goto(index, animate = true) {
-      if (!animate) gallery.style.transition = 'none';
-      current = Math.max(0, Math.min(index, photos.length - 1));
-      gallery.style.transform = `translateX(${current * 100}vw)`;
-      if (!animate) setTimeout(() => gallery.style.transition = '', 20);
+// ─── Build ───────────────────────────────────────────
+function build() {
+  photos.forEach((file, i) => {
+    const div = document.createElement('div');
+    div.className = 'slide';
 
-      // Update counter
-      counter.textContent = `${current + 1} / ${photos.length}`;
+    const img = new Image();
+    // encode spaces & special chars in filename
+    img.src = PHOTOS_DIR + file.split('/').map(encodeURIComponent).join('/');
+    img.alt = file.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+    img.draggable = false;
+    div.appendChild(img);
 
-      // Update dots
-      document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
+    viewer.appendChild(div);
+    slides.push(div);
+  });
 
-      // Subtle zoom on active
-      document.querySelectorAll('.slide').forEach((s, i) => s.classList.toggle('active', i === current));
-
-      // Preload neighbors
-      [current - 1, current + 1].forEach(idx => {
-        if (idx >= 0 && idx < photos.length) {
-          const img = gallery.children[idx].querySelector('img');
-          if (img.loading === 'lazy') img.loading = 'auto';
-        }
-      });
-    }
-
-    document.getElementById('prev').addEventListener('click', () => goto(current - 1));
-    document.getElementById('next').addEventListener('click', () => goto(current + 1));
-
-    // ── Keyboard ────────────────────────────────────────────
-    document.addEventListener('keydown', e => {
-      if (e.key === 'ArrowRight' || e.key === 'ArrowUp')   goto(current - 1);
-      if (e.key === 'ArrowLeft'  || e.key === 'ArrowDown') goto(current + 1);
-      if (e.key === 'Escape') closeInfo();
+  // Dots (only if <= 20 photos)
+  if (photos.length <= 20) {
+    photos.forEach((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'dot';
+      d.addEventListener('click', () => goTo(i));
+      dotsEl.appendChild(d);
     });
+  }
+}
 
-    // ── Touch / Mouse swipe ─────────────────────────────────
-    function attachEvents() {
-      const el = document.body;
-      // Touch
-      el.addEventListener('touchstart', e => {
-        if (infoPanel.classList.contains('open')) return;
-        startX = e.touches[0].clientX;
-        isDragging = true;
-        gallery.style.transition = 'none';
-      }, { passive: true });
+// ─── Navigate ────────────────────────────────────────
+function goTo(index) {
+  if (!slides.length) return;
+  current = Math.max(0, Math.min(index, photos.length - 1));
 
-      el.addEventListener('touchmove', e => {
-        if (!isDragging) return;
-        dragDelta = e.touches[0].clientX - startX;
-        gallery.style.transform = `translateX(calc(${current * 100}vw + ${dragDelta}px))`;
-      }, { passive: true });
+  slides.forEach((s, i) => s.classList.toggle('active', i === current));
+  document.querySelectorAll('.dot')
+          .forEach((d, i) => d.classList.toggle('active', i === current));
 
-      el.addEventListener('touchend', () => {
-        if (!isDragging) return;
-        isDragging = false;
-        gallery.style.transition = '';
-        if (dragDelta < -60)      goto(current + 1);
-        else if (dragDelta > 60)  goto(current - 1);
-        else                      goto(current);
-        dragDelta = 0;
-      });
+  counter.textContent = photos.length > 1
+    ? (current + 1) + ' / ' + photos.length
+    : '';
 
-      // Mouse drag
-      el.addEventListener('mousedown', e => {
-        startX = e.clientX; isDragging = true;
-        gallery.style.transition = 'none';
-      });
-      el.addEventListener('mousemove', e => {
-        if (!isDragging) return;
-        dragDelta = e.clientX - startX;
-        gallery.style.transform = `translateX(calc(${current * 100}vw + ${dragDelta}px))`;
-      });
-      el.addEventListener('mouseup', () => {
-        if (!isDragging) return;
-        isDragging = false; gallery.style.transition = '';
-        if (dragDelta < -60)      goto(current + 1);
-        else if (dragDelta > 60)  goto(current - 1);
-        else                      goto(current);
-        dragDelta = 0;
-      });
+  // Preload neighbors
+  [current - 1, current + 1].forEach(idx => {
+    if (idx >= 0 && idx < photos.length) {
+      slides[idx].querySelector('img').src =
+        PHOTOS_DIR + photos[idx].split('/').map(encodeURIComponent).join('/');
     }
+  });
+}
 
-    // ── Info panel ──────────────────────────────────────────
-    function openInfo(i) {
-      if (isDragging || Math.abs(dragDelta) > 5) return;
-      const name = photos[i].replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
-      document.getElementById('info-name').textContent = name;
-      document.getElementById('info-index').textContent = `صورة ${i + 1} من ${photos.length}`;
-      infoPanel.classList.add('open');
+// ─── Swipe ───────────────────────────────────────────
+function bindSwipe() {
+  let sx = 0, sy = 0;
+
+  viewer.addEventListener('touchstart', e => {
+    sx = e.touches[0].clientX;
+    sy = e.touches[0].clientY;
+  }, { passive: true });
+
+  viewer.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - sx;
+    const dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+      dx > 0 ? goTo(current - 1) : goTo(current + 1);
     }
-    function closeInfo() { infoPanel.classList.remove('open'); }
-    infoPanel.addEventListener('click', e => { if (e.target === infoPanel) closeInfo(); });
+  }, { passive: true });
+}
 
-    // ── Swipe hint ──────────────────────────────────────────
-    function showSwipeHint() {
-      if (photos.length < 2) return;
-      const hint = document.createElement('div');
-      hint.id = 'swipe-hint';
-      hint.innerHTML = `<span>←</span><span>اسحب للتنقل</span><span>→</span>`;
-      document.body.appendChild(hint);
-      hint.addEventListener('animationend', () => hint.remove());
-    }
+// ─── Buttons ─────────────────────────────────────────
+btnPrev.addEventListener('click', () => goTo(current - 1));
+btnNext.addEventListener('click', () => goTo(current + 1));
 
-    init();
-  </script>
+// ─── Keyboard ────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowLeft')  goTo(current + 1);
+  if (e.key === 'ArrowRight') goTo(current - 1);
+});
+
+// ─── Swipe hint ──────────────────────────────────────
+function showHint() {
+  if (photos.length < 2) return;
+  const h = document.createElement('div');
+  h.id = 'hint';
+  h.textContent = '← اسحب للتنقل →';
+  document.body.appendChild(h);
+  h.addEventListener('animationend', () => h.remove());
+}
+
+init();
+</script>
 </body>
 </html>
